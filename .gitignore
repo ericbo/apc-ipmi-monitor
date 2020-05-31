@@ -1,6 +1,8 @@
 __pycache__/
 *.egg-info/
 .idea/
+.pytest_cache/
 build/
 dist/
 update.sh
+config.yaml

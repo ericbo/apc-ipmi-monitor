@@ -1,19 +1,41 @@
-import yaml
+import importlib
+import sys
+
+import click
+
+# Add apcIpmiMpnitor to dev workspace
+if not importlib.util.find_spec("apcIpmiMonitor"):
+    sys.path.insert(0, ".")
 
 from apcIpmiMonitor.ApcSession import ApcSession
 from apcIpmiMonitor.IpmiSession import IpmiSession
+from apcIpmiMonitor.Config import Config
+from apcIpmiMonitor.Repository.IpmiGateway import IpmiGateway
+from apcIpmiMonitor.Command import Command
+from apcIpmiMonitor.Formatter.ServerStatusFormatter import ServerStatusFormatter
 from apcIpmiMonitor.ServerSessions import ServerSessions
 
+cli = click.Group()
 
-def load_from_config():
-    with open("../config.yaml", "r") as file:
-        data = yaml.safe_load(file)
+@cli.group()
+def monitoring():
+    pass
 
-    return data
+@monitoring.command()
+@click.option("-f", "--config", required=True, help="Path to your config file.", type=click.Path(exists=True))
+def server_status(config):
+    config = Config(config)
+    servers = config.get_servers()
+    gateway = IpmiGateway(Command("ipmitool", []))
+    formatter = ServerStatusFormatter(gateway)
 
-def main():
+    click.echo(formatter.format_server_list_to_table(servers))
+
+@monitoring.command()
+@click.option("-f", "--config", help="Path to your config file.", type=click.Path(exists=True))
+def run(config):
     sessions = []
-    configs = load_from_config()
+    configs = Config(config).to_dict()
     apc = ApcSession(configs.get("apcaccess_binary"))
 
     if apc.is_fully_charged():
@@ -56,4 +78,4 @@ def main():
     print("All servers have been shutdown...")
 
 if __name__ == "__main__":
-    main()
+    cli()

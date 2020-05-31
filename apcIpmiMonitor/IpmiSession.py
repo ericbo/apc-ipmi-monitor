@@ -1,8 +1,8 @@
 from apcIpmiMonitor.Command import Command
 
 class IpmiSession(object):
-    def __init__(self, binary: str, ip: str, username: str, password: str):
-        self.__command = Command(binary, ["-H", ip, "-U", username, "-P", password])
+    def __init__(self, binary: str, hostname: str, username: str, password: str):
+        self.__command = Command(binary, ["-H", hostname, "-U", username, "-P", password])
         self.__command.secret(password)
 
     def power_status(self):
