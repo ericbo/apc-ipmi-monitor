@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+import apcIpmiMonitor.__main__
+
+if __name__ == '__main__':
+    apcIpmiMonitor.__main__.main()

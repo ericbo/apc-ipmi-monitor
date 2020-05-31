@@ -1,5 +1,5 @@
 import os
-from Command import Command
+from apcIpmiMonitor.Command import Command
 
 
 class ApcSession(object):

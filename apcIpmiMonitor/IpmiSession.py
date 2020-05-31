@@ -1,4 +1,4 @@
-from Command import Command
+from apcIpmiMonitor.Command import Command
 
 class IpmiSession(object):
     def __init__(self, binary: str, ip: str, username: str, password: str):

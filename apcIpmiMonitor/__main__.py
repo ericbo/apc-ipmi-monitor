@@ -1,8 +1,8 @@
 import yaml
 
-from ApcSession import ApcSession
-from IpmiSession import IpmiSession
-from ServerSessions import ServerSessions
+from apcIpmiMonitor.ApcSession import ApcSession
+from apcIpmiMonitor.IpmiSession import IpmiSession
+from apcIpmiMonitor.ServerSessions import ServerSessions
 
 
 def load_from_config():
