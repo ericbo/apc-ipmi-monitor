@@ -1,4 +1,7 @@
 # ericbo/apc-ipmi-monitor 
+![Python package](https://github.com/ericbo/apc-ipmi-monitor/workflows/Python%20package/badge.svg)
+![Upload Python Package](https://github.com/ericbo/apc-ipmi-monitor/workflows/Upload%20Python%20Package/badge.svg)
+
 **WARNING!** This is just a prof of concept I created during some free time. It
 is not in a state were I would use it in my own homelab yet.
 
