@@ -1,20 +1,19 @@
 import os
+
 from apcIpmiMonitor.Command import Command
 
 
-class ApcSession(object):
-    def __init__(self, binary: str):
-        self.__command = Command(binary, [])
-
-    def info(self):
-        #return self.__command.run([])
-        return self.get_field("STATUS")
+class ApcGateway(object):
+    def __init__(self, command: Command):
+        self.__command = command
 
     def is_fully_charged(self):
         charge = self.get_field("BCHARGE").split(" ")[0]
-        status = self.get_field("STATUS")
 
-        return charge == "100.0" and status == "ONLINE"
+        return charge == "100.0" and self.is_online()
+
+    def is_online(self):
+        return self.get_field("STATUS") == "ONLINE"
 
     def is_on_battery(self):
         status = self.get_field("STATUS")

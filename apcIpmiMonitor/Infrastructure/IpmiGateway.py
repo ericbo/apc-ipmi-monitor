@@ -8,11 +8,16 @@ class IpmiGateway(object):
 
     def get_status(self, server: Server):
         args = [*self.__create_credential_args(server), *["chassis", "power", "status"]]
+        self.__command.secret(server.password)
 
         try:
             return self.__command.run(args).rstrip()
         except ValueError:
             return "Unknown (Connection Timeout)"
+
+    def trigger_soft_shutdown(self, server: Server):
+        args = [*self.__create_credential_args(server), *["chassis", "power", "soft"]]
+        return self.__command.run(args)
 
     @staticmethod
     def __create_credential_args(server: Server):

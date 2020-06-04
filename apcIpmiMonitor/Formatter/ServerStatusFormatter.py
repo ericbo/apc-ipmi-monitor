@@ -26,7 +26,6 @@ class ServerStatusFormatter(object):
                 server.hostname,
                 self.__format_status(status)
             ])
-        print(statuses)
 
         return tabulate(statuses, tablefmt="pretty")
 

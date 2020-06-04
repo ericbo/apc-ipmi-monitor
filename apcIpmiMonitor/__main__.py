@@ -7,13 +7,11 @@ import click
 if not importlib.util.find_spec("apcIpmiMonitor"):
     sys.path.insert(0, ".")
 
-from apcIpmiMonitor.ApcSession import ApcSession
-from apcIpmiMonitor.IpmiSession import IpmiSession
+from apcIpmiMonitor.Infrastructure.ApcGateway import ApcGateway
 from apcIpmiMonitor.Config import Config
-from apcIpmiMonitor.Repository.IpmiGateway import IpmiGateway
+from apcIpmiMonitor.Infrastructure.IpmiGateway import IpmiGateway
 from apcIpmiMonitor.Command import Command
 from apcIpmiMonitor.Formatter.ServerStatusFormatter import ServerStatusFormatter
-from apcIpmiMonitor.ServerSessions import ServerSessions
 
 cli = click.Group()
 
@@ -22,60 +20,51 @@ def monitoring():
     pass
 
 @monitoring.command()
-@click.option("-f", "--config", required=True, help="Path to your config file.", type=click.Path(exists=True))
-def server_status(config):
-    config = Config(config)
+@click.option("-f", "--config-path", required=True, help="Path to your config file.", type=click.Path(exists=True))
+def server_status(config_path):
+    config = Config(config_path)
     servers = config.get_servers()
-    gateway = IpmiGateway(Command("ipmitool", []))
+    gateway = IpmiGateway(Command("ipmitool"))
     formatter = ServerStatusFormatter(gateway)
 
     click.echo(formatter.format_server_list_to_table(servers))
 
 @monitoring.command()
-@click.option("-f", "--config", help="Path to your config file.", type=click.Path(exists=True))
-def run(config):
-    sessions = []
-    configs = Config(config).to_dict()
-    apc = ApcSession(configs.get("apcaccess_binary"))
+@click.option("-f", "--config-path", required=True, help="Path to your config file.", type=click.Path(exists=True))
+def run(config_path):
+    config = Config(config_path)
+    servers = config.get_servers()
 
-    if apc.is_fully_charged():
-        print("APC is charged and using wall power, closing...")
+    ipmi_gateway = IpmiGateway(Command("ipmitool"))
+    apc_gateway = ApcGateway(Command("apcaccess"))
+
+    formatter = ServerStatusFormatter(ipmi_gateway)
+
+    if apc_gateway.is_fully_charged():
+        click.echo("Battery is plugged in & fully charged. No action is required...")
         exit(0)
 
-    field = configs["apc_shutdown_threshold"]["field"]
-    threshold = configs["apc_shutdown_threshold"]["value"]
+    field = config.to_dict()["apc_shutdown_threshold"]["field"]
+    threshold = config.to_dict()["apc_shutdown_threshold"]["value"]
 
-    if not apc.is_on_battery():
-        print("APC is back online. No action needed for this iteration.")
+    if apc_gateway.is_online():
+        click.echo(f"Batter is back online, status upgraded to 'degraded' status. Waiting for batter to reach 100%.")
         exit(0)
 
-    if float(apc.get_field(field).split(" ")[0]) > float(threshold):
-        print(f"APC '{field}' is above the '{threshold}' threshold. No action needed for this iteration.")
+    if float(apc_gateway.get_field(field).split(" ")[0]) > float(threshold):
+        click.echo(f"APC '{field}' is above the '{threshold}' threshold. No action needed for this iteration.")
         exit(0)
 
-    print(f"APC had dropped bellow the '{threshold}' threshold for '{field}'. Shutting down all servers...")
+    click.echo(f"APC had dropped bellow the '{threshold}' threshold for '{field}'. Shutting down all servers...")
 
-    for server in configs.get("servers", []):
-        conf = configs.get("servers", [])[server]
-        session = IpmiSession(
-            configs.get("ipmitool_binary"),
-            conf.get("hostname"),
-            conf.get("username"),
-            conf.get("password")
-        )
-        try:
-            session.power_status()
-        except Exception as e:
-            print(f"Failed to connect to server '{server}'. Will skip for this iteration.\n{e}")
-            continue
+    for server in servers:
+        if ipmi_gateway.get_status(server) == "Online":
+            ipmi_gateway.trigger_soft_shutdown(server)
 
-        sessions.append(session)
+    click.echo("All servers have been issued a shutdown command...")
 
-    server_sessions = ServerSessions(sessions)
+    click.echo(formatter.format_server_list_to_table(servers))
 
-    server_sessions.shutdown_all()
-
-    print("All servers have been shutdown...")
 
 if __name__ == "__main__":
     cli()
