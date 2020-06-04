@@ -1,4 +1,4 @@
-ipmitool_binary: ipmitool
+ipmitool_binary: ipmitoolipmi_gateway
 apcaccess_binary: apcaccess
 
 servers:

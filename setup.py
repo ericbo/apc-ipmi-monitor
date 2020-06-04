@@ -22,5 +22,7 @@ setuptools.setup(
         "Operating System :: POSIX :: Linux"
     ],
     python_requires='>=3.6',
-    scripts=['bin/apc-ipmi-monitor'],
+    entry_points={
+        'console_scripts': ['apc-ipmi-monitor=apcIpmiMonitor.__main__:cli'],
+    }
 )

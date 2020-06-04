@@ -1,11 +1,11 @@
 import subprocess
 
 class Command(object):
-    def __init__(self, binary: str, args: list):
-        self.__base_command = [binary, *args]
+    def __init__(self, binary: str):
+        self.__base_command = [binary]
         self.__secret = None
 
-    def secret(self, secret:str):
+    def secret(self, secret: str):
         self.__secret = secret
 
     def run(self, args: list):
