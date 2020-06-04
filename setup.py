@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="apc-ipmi-monitor-ericbo", # Replace with your own username
-    version=0.1.1,
+    version="0.1.1",
     author="Eric Bottazzi",
     author_email="author@example.com",
     description="Trigger a graceful shutdown on all servers in the event there is an extended power outage.",
